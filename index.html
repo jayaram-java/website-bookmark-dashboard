@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Hub & Website Links Dashboard</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom floating label / fieldset border styling */
+    .fieldset-container {
+      position: relative;
+    }
+    .fieldset-container select,
+    .fieldset-container input {
+      transition: all 0.2s ease-in-out;
+    }
+    .fieldset-label {
+      position: absolute;
+      top: -9px;
+      left: 12px;
+      padding: 0 6px;
+      background-color: #ffffff;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.025em;
+      color: #64748b;
+      border-radius: 4px;
+      pointer-events: none;
+      z-index: 10;
+    }
+    /* Scrollbar aesthetics */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="h-full text-slate-800 antialiased flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2.5 bg-slate-900 text-white text-sm font-medium px-4 py-3 rounded-xl shadow-2xl border border-slate-800">
+    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+    </svg>
+    <span id="toast-message">URL copied to clipboard!</span>
+  </div>
+
+  <!-- Header Banner -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <!-- Title & Info -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-100">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2.5">
+              <h1 class="text-xl font-bold tracking-tight text-slate-900">Personal Hub & Website Links</h1>
+              <span id="total-badge" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                126 Links
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">Quick access directory for bookmarks, productivity, tools & resources</p>
+          </div>
+        </div>
+
+        <!-- Quick Summary / Stats -->
+        <div class="flex items-center gap-2 text-xs text-slate-600">
+          <div class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 shadow-xs">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Showing <strong id="visible-count" class="text-slate-900">126</strong> items</span>
+          </div>
+          <button id="reset-btn" class="hidden text-xs text-indigo-600 hover:text-indigo-800 font-medium px-2 py-1 underline">
+            Reset Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- Controls Row: Search & Filters -->
+      <div class="mt-4 grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-center">
+        <!-- Search Input with Magnifying Glass -->
+        <div class="sm:col-span-6 relative">
+          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="Search website, domain, description..." 
+            class="w-full pl-10 pr-9 py-2.5 bg-white border border-slate-300 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 shadow-xs transition-all"
+            autocomplete="off"
+          />
+          <button id="clear-search-btn" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Category Dropdown (Fieldset / Floating Label Style) -->
+        <div class="sm:col-span-3 fieldset-container">
+          <label class="fieldset-label" for="category-select">Category</label>
+          <div class="relative">
+            <select 
+              id="category-select" 
+              class="w-full pl-3.5 pr-8 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 shadow-xs appearance-none cursor-pointer"
+            >
+              <option value="all">All categories</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sort Dropdown (Fieldset / Floating Label Style) -->
+        <div class="sm:col-span-3 fieldset-container">
+          <label class="fieldset-label" for="sort-select">Sort</label>
+          <div class="relative">
+            <select 
+              id="sort-select" 
+              class="w-full pl-3.5 pr-8 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 shadow-xs appearance-none cursor-pointer"
+            >
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="az">Alphabetical (A-Z)</option>
+              <option value="za">Alphabetical (Z-A)</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Category Chips Bar -->
+      <div class="mt-3 flex items-center gap-1.5 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar" id="category-pills">
+        <!-- Injected dynamically via JS -->
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Table Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden flex flex-col">
+      
+      <!-- Table Wrapper -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50/80 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider select-none">
+              
+              <!-- Website Header (Globe / Link icon) -->
+              <th scope="col" class="py-3.5 pl-5 pr-4 w-[32%] sm:w-[30%]">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                  </svg>
+                  <span>Website</span>
+                </div>
+              </th>
+
+              <!-- Description Header (Menu / Text lines icon) -->
+              <th scope="col" class="py-3.5 px-4 w-[42%] sm:w-[46%]">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
+                  </svg>
+                  <span>Description</span>
+                </div>
+              </th>
+
+              <!-- Category Header (Shapes / Pyramid icon) -->
+              <th scope="col" class="py-3.5 px-4 w-[18%] sm:w-[16%]">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                  </svg>
+                  <span>Category</span>
+                </div>
+              </th>
+
+              <!-- Quick Action (Copy / Open) -->
+              <th scope="col" class="py-3.5 pl-3 pr-5 text-right w-[8%]">
+                <span class="sr-only">Actions</span>
+                <span class="text-[11px] text-slate-400 font-normal">Action</span>
+              </th>
+            </tr>
+          </thead>
+          
+          <tbody id="table-body" class="divide-y divide-slate-100 text-sm bg-white">
+            <!-- Dynamic Rows will be rendered here -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="hidden py-16 px-4 text-center">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 text-slate-400 mb-3">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <h3 class="text-base font-semibold text-slate-800">No websites found</h3>
+        <p class="text-sm text-slate-500 mt-1 max-w-sm mx-auto">No results matched your search or category filter. Try refining your keywords or clearing the filter.</p>
+        <button id="empty-clear-btn" class="mt-4 inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors">
+          Clear all filters
+        </button>
+      </div>
+
+      <!-- Footer / Pagination & Count Bar -->
+      <div class="border-t border-slate-100 px-5 py-3.5 bg-slate-50/60 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-slate-500">
+        <div class="flex items-center gap-3">
+          <span>Showing <span id="pagination-info" class="font-medium text-slate-800">1 to 25 of 126</span> links</span>
+          <div class="flex items-center gap-1.5 pl-2 border-l border-slate-200">
+            <label for="page-size-select" class="text-slate-500">Rows per page:</label>
+            <select id="page-size-select" class="bg-white border border-slate-200 rounded-md px-2 py-1 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 cursor-pointer">
+              <option value="25" selected>25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="all">All (126)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="pagination-controls" class="flex items-center gap-1 self-end sm:self-auto">
+          <!-- Pagination buttons rendered by JS -->
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-xs text-slate-400">
+    Personal Hub &bull; Static Offline Ready &bull; Fast Search & Navigation
+  </footer>
+
+  <!-- Embedded Data & Application Logic -->
+  <script>
+    // 1. Categories Mapping
+    const categories = [
+      { "id": 1, "name": "Banking" },
+      { "id": 2, "name": "E-Commerce / Shopping" },
+      { "id": 3, "name": "Entertainment" },
+      { "id": 4, "name": "Social Media" },
+      { "id": 5, "name": "News & Media" },
+      { "id": 6, "name": "Travel & Booking" },
+      { "id": 7, "name": "Government & Services" },
+      { "id": 8, "name": "Job & Career" },
+      { "id": 9, "name": "AI Assistants" },
+      { "id": 10, "name": "Email service" },
+      { "id": 11, "name": "Interview" },
+      { "id": 12, "name": "Exploring" },
+      { "id": 13, "name": "Others" },
+      { "id": 14, "name": "Motivation" },
+      { "id": 15, "name": "Books" },
+      { "id": 16, "name": "World" },
+      { "id": 17, "name": "Finance" },
+      { "id": 18, "name": "Sports" },
+      { "id": 19, "name": "Drives" },
+      { "id": 20, "name": "Work" },
+      { "id": 21, "name": "Health" }
+    ];
+
+    // Create Category ID Map for quick lookups
+    const categoryMap = {};
+    categories.forEach(cat => {
+      categoryMap[cat.id] = cat.name;
+    });
+
+    // 2. Website Link Details
+    const linksData = [
+      { "id": 1, "category_id": 1, "website_link": "https://retail.onlinesbi.sbi/retail/login.htm", "description": "SBI Retail Internet Banking Login", "created_date": "2026-03-27 23:25:54" },
+      { "id": 2, "category_id": 1, "website_link": "https://retailnetbanking.icici.bank.in/login-page", "description": "icici", "created_date": "2026-03-27 23:44:33" },
+      { "id": 3, "category_id": 1, "website_link": "https://omni.axis.bank.in/axisretailbanking/", "description": "axisbank", "created_date": "2026-03-27 23:46:03" },
+      { "id": 4, "category_id": 6, "website_link": "https://www.irctc.co.in/eticket/train-search", "description": "irctc", "created_date": "2026-03-27 23:49:04" },
+      { "id": 5, "category_id": 5, "website_link": "https://www.youtube.com/watch?v=u1_wiEjDotA", "description": "Learn English with TV Series", "created_date": "2026-03-27 23:51:35" },
+      { "id": 6, "category_id": 5, "website_link": "https://www.youtube.com/@moneycontrol/videos", "description": "moneycontrol", "created_date": "2026-03-27 23:52:48" },
+      { "id": 7, "category_id": 3, "website_link": "https://www.youtube.com/watch?v=YoFoKZ9HgfQ", "description": "Little things", "created_date": "2026-03-28 00:01:10" },
+      { "id": 8, "category_id": 3, "website_link": "https://www.youtube.com/watch?v=QYiyAxjChhE&list=PL4iCr-gSvhKyckCyKvRpWjSsef5Y3NuFM", "description": "Soulmates", "created_date": "2026-03-28 08:58:33" },
+      { "id": 9, "category_id": 8, "website_link": "https://www.youtube.com/@SeleniumExpress/videos", "description": "spring", "created_date": "2026-03-28 10:47:03" },
+      { "id": 10, "category_id": 8, "website_link": "https://www.youtube.com/@Telusko/videos", "description": "Telusko", "created_date": "2026-03-28 10:49:04" },
+      { "id": 11, "category_id": 5, "website_link": "https://www.youtube.com/watch?v=_5x_h23rXWE&list=PLcetZ6gSk96_IQnT7zKUjp7GtQeeGDI1a&index=2", "description": "BBC english", "created_date": "2026-03-28 19:41:16" },
+      { "id": 12, "category_id": 8, "website_link": "https://www.youtube.com/watch?v=NkWOzTEEcco", "description": "Intellipaat", "created_date": "2026-03-29 11:41:02" },
+      { "id": 13, "category_id": 3, "website_link": "https://www.youtube.com/watch?v=20_2Q7hoKPk&list=PLcUQLQkgCREb0Sg4ZKG1FH2EeB0VZ1URZ&index=1", "description": "Reunion", "created_date": "2026-03-29 13:54:25" },
+      { "id": 14, "category_id": 4, "website_link": "https://www.youtube.com/watch?v=-Bvd9YMW3cc", "description": "sun music", "created_date": "2026-03-29 21:27:40" },
+      { "id": 15, "category_id": 8, "website_link": "https://www.youtube.com/watch?v=xMlcsFLk-CU", "description": "mock interview", "created_date": "2026-03-30 10:10:19" },
+      { "id": 16, "category_id": 4, "website_link": "https://www.hotstar.com/in/home", "description": "hotstar", "created_date": "2026-03-31 20:43:19" },
+      { "id": 17, "category_id": 3, "website_link": "https://www.youtube.com/watch?v=Xa4c8PZ8uKs", "description": "Filtercopy", "created_date": "2026-04-02 21:26:44" },
+      { "id": 18, "category_id": 4, "website_link": "https://www.youtube.com/feed/channels", "description": "you tube", "created_date": "2026-04-03 10:29:49" },
+      { "id": 19, "category_id": 4, "website_link": "https://web.whatsapp.com/", "description": "whatsapp", "created_date": "2026-04-03 11:30:01" },
+      { "id": 20, "category_id": 8, "website_link": "https://www.naukri.com/mnjuser/profile", "description": "Naukri", "created_date": "2026-04-03 12:29:22" },
+      { "id": 21, "category_id": 8, "website_link": "https://www.linkedin.com/feed", "description": "Linkedin", "created_date": "2026-04-03 12:37:44" },
+      { "id": 22, "category_id": 9, "website_link": "https://chatgpt.com/", "description": "chat gpt", "created_date": "2026-04-03 18:09:13" },
+      { "id": 23, "category_id": 9, "website_link": "https://gemini.google.com/app", "description": "Gemini - Google", "created_date": "2026-04-03 18:22:26" },
+      { "id": 24, "category_id": 9, "website_link": "https://www.perplexity.ai/", "description": "Perplexity", "created_date": "2026-04-03 18:23:06" },
+      { "id": 25, "category_id": 9, "website_link": "https://claude.ai/new", "description": "Claude", "created_date": "2026-04-03 18:23:50" },
+      { "id": 26, "category_id": 3, "website_link": "https://www.youtube.com/watch?v=i8P1ujR1irg&list=PL4x7Of-X4XhgVWaRcIiLz_E7WTD_lwo92", "description": "Home Sweet Office", "created_date": "2026-04-03 21:05:35" },
+      { "id": 27, "category_id": 10, "website_link": "https://outlook.live.com/mail/", "description": "Outlook", "created_date": "2026-04-04 10:01:20" },
+      { "id": 28, "category_id": 10, "website_link": "https://mail.google.com/mail/u/0/?tab=rm&ogbl#inbox", "description": "Gmail", "created_date": "2026-04-04 10:21:10" },
+      { "id": 29, "category_id": 2, "website_link": "https://www.flipkart.com/account/orders?link=home_orders", "description": "Flipkart", "created_date": "2026-04-04 12:13:15" },
+      { "id": 30, "category_id": 9, "website_link": "https://console.groq.com/keys", "description": "groq", "created_date": "2026-04-04 20:01:01" },
+      { "id": 31, "category_id": 11, "website_link": "https://app-eu.codility.com/demo/take-sample-test/", "description": "Interview", "created_date": "2026-04-05 12:04:00" },
+      { "id": 32, "category_id": 9, "website_link": "https://copilot.microsoft.com/", "description": "copilot - microsoft", "created_date": "2026-04-05 17:45:48" },
+      { "id": 33, "category_id": 9, "website_link": "https://www.youtube.com/watch?v=n86n3G12kX8&list=PLIk2FOQCiuKMyjuFzJ6eX6I40L8N7xqOS", "description": "YouTube ref", "created_date": "2026-04-05 17:51:33" },
+      { "id": 34, "category_id": 18, "website_link": "https://www.cricbuzz.com/", "description": "cricbuzz", "created_date": "2026-04-05 20:50:57" },
+      { "id": 35, "category_id": 5, "website_link": "https://www.deccanchronicle.com/business", "description": "DC - Deccan chronicle", "created_date": "2026-04-11 08:58:01" },
+      { "id": 36, "category_id": 1, "website_link": "https://www.indmoney.com/dashboard", "description": "Indmoney - account aggregator", "created_date": "2026-04-11 14:20:00" },
+      { "id": 37, "category_id": 12, "website_link": "https://www.habicard.com/app", "description": "habicard - habit tracking application", "created_date": "2026-04-11 14:38:46" },
+      { "id": 38, "category_id": 13, "website_link": "https://www.airtel.in/manage-account/login", "description": "Airtel", "created_date": "2026-04-18 10:39:58" },
+      { "id": 39, "category_id": 10, "website_link": "https://mail.google.com/mail/u/1/#inbox", "description": "Gmail - Jayaram Java", "created_date": "2026-04-18 14:19:12" },
+      { "id": 40, "category_id": 7, "website_link": "https://eportal.incometax.gov.in/iec/foservices/#/login", "description": "Income tax", "created_date": "2026-04-18 14:20:22" },
+      { "id": 41, "category_id": 9, "website_link": "https://notebooklm.google.com/?icid=home_maincta&_gl=1*1dcqgl0*_ga*MTAyOTE3MDMxNS4xNzc2OTM1MDI4*_ga_W0LDH41ZCB*czE3NzY5MzUwMjckbzEkZzAkdDE3NzY5MzUwMjckbjYwJGwwJGgw&pli=1", "description": "Notebook lm", "created_date": "2026-04-23 14:35:43" },
+      { "id": 42, "category_id": 8, "website_link": "https://leetcode.com/problemset/", "description": "leetcode", "created_date": "2026-04-23 14:41:33" },
+      { "id": 43, "category_id": 8, "website_link": "https://career.infosys.com/jobdesc?jobReferenceCode=INFSYS-EXTERNAL-243735&rc=0&jobType=normal", "description": "infosys", "created_date": "2026-04-23 15:36:01" },
+      { "id": 44, "category_id": 5, "website_link": "https://timesofindia.indiatimes.com/business", "description": "times of india", "created_date": "2026-04-24 17:08:49" },
+      { "id": 45, "category_id": 5, "website_link": "https://moneypechu.com/international-news/", "description": "Money pechu", "created_date": "2026-04-25 11:21:55" },
+      { "id": 46, "category_id": 5, "website_link": "https://www.newindianexpress.com/business", "description": "indian express", "created_date": "2026-04-25 11:24:54" },
+      { "id": 47, "category_id": 14, "website_link": "https://www.youtube.com/@thathuvapechu478/videos", "description": "Thathuva Pechu", "created_date": "2026-05-03 12:41:32" },
+      { "id": 48, "category_id": 14, "website_link": "https://www.dinamalar.com/videos/shorts-reels/dinamalar-anmeegam/58670", "description": "Dinamalar - shorts", "created_date": "2026-05-03 12:43:36" },
+      { "id": 49, "category_id": 14, "website_link": "https://www.youtube.com/@PsychologyinTamil/videos", "description": "Psychology in Tamil", "created_date": "2026-05-03 12:44:32" },
+      { "id": 50, "category_id": 14, "website_link": "https://www.youtube.com/@beyondtheordinary-tamil/videos", "description": "Beyond The Ordinary – Tamil Audiobooks", "created_date": "2026-05-03 12:45:29" },
+      { "id": 51, "category_id": 14, "website_link": "https://open.spotify.com/episode/5RpaQfQJfyt7udEviKMMFA", "description": "Spotify", "created_date": "2026-05-03 12:48:25" },
+      { "id": 52, "category_id": 13, "website_link": "https://www.qrcodescanner.in/", "description": "QR Scanner", "created_date": "2026-05-03 13:07:20" },
+      { "id": 53, "category_id": 14, "website_link": "https://www.youtube.com/watch?v=PnRFjKgiWWU", "description": "flute", "created_date": "2026-05-03 16:19:35" },
+      { "id": 54, "category_id": 14, "website_link": "https://kalkionline.com/lifestyle/motivation", "description": "kalki", "created_date": "2026-05-03 16:44:46" },
+      { "id": 55, "category_id": 15, "website_link": "https://youtu.be/Gsws4fNElDM?si=0b6wD8x2lQmuNQg5", "description": "5AM Club - Robin Sharma", "created_date": "2026-05-07 10:50:29" },
+      { "id": 56, "category_id": 13, "website_link": "https://www.youtube.com/@RadhanPandit/videos", "description": "Astrology", "created_date": "2026-05-12 18:40:33" },
+      { "id": 57, "category_id": 16, "website_link": "https://www.google.com/maps", "description": "Google maps", "created_date": "2026-05-15 14:03:29" },
+      { "id": 58, "category_id": 6, "website_link": "https://www.tnstc.in/OTRSOnline/", "description": "tnstc", "created_date": "2026-05-16 12:50:37" },
+      { "id": 59, "category_id": 7, "website_link": "https://www.digilocker.gov.in/web/login", "description": "Digi locker", "created_date": "2026-05-17 17:51:38" },
+      { "id": 60, "category_id": 5, "website_link": "https://www.youtube.com/@cricbuzz/streams", "description": "Cricket live", "created_date": "2026-05-17 18:43:02" },
+      { "id": 61, "category_id": 13, "website_link": "https://vidssave.com/youtube-video-downloader-8hs", "description": "youtube download", "created_date": "2026-05-17 21:04:45" },
+      { "id": 62, "category_id": 13, "website_link": "https://www.nobroker.in/chennai/shared", "description": "No brokers", "created_date": "2026-05-18 16:54:18" },
+      { "id": 63, "category_id": 1, "website_link": "https://visarewards.razorpay.com/", "description": "Visa rewards", "created_date": "2026-05-19 18:23:10" },
+      { "id": 64, "category_id": 10, "website_link": "https://mail.google.com/mail/u/5/#inbox", "description": "vetriku vali", "created_date": "2026-05-20 11:04:40" },
+      { "id": 65, "category_id": 14, "website_link": "https://studio.youtube.com/channel/UCkSCjrttz9exGkoVmKXvieg/videos", "description": "motivaton - channel", "created_date": "2026-05-20 12:25:47" },
+      { "id": 66, "category_id": 13, "website_link": "https://www.neuralframes.com/tools/audio-to-video", "description": "audio-to-video", "created_date": "2026-05-20 12:31:13" },
+      { "id": 67, "category_id": 14, "website_link": "https://www.youtube.com/@simtamil/videos", "description": "Strength India Movement", "created_date": "2026-05-25 20:41:24" },
+      { "id": 68, "category_id": 14, "website_link": "https://www.youtube.com/watch?v=04YXBonabtA", "description": "business video", "created_date": "2026-05-25 20:55:02" },
+      { "id": 69, "category_id": 16, "website_link": "https://www.spacex.com/", "description": "Spacex", "created_date": "2026-05-30 13:58:50" },
+      { "id": 70, "category_id": 16, "website_link": "https://www.nasa.gov/", "description": "NASA", "created_date": "2026-05-30 13:59:28" },
+      { "id": 71, "category_id": 16, "website_link": "https://www.isro.gov.in/", "description": "ISRO", "created_date": "2026-05-30 13:59:51" },
+      { "id": 72, "category_id": 16, "website_link": "https://agnikul.in/", "description": "Agnikul", "created_date": "2026-05-30 14:00:16" },
+      { "id": 73, "category_id": 16, "website_link": "https://www.skyroot.in/", "description": "SKY Root", "created_date": "2026-05-30 14:20:25" },
+      { "id": 74, "category_id": 16, "website_link": "https://www.blueorigin.com/", "description": "Blue origin", "created_date": "2026-05-30 14:21:13" },
+      { "id": 75, "category_id": 4, "website_link": "https://x.com/home", "description": "Twitter | X", "created_date": "2026-05-30 20:08:36" },
+      { "id": 76, "category_id": 8, "website_link": "https://www.risingbrain.org/sheet", "description": "Rising brain", "created_date": "2026-06-06 22:02:04" },
+      { "id": 77, "category_id": 8, "website_link": "https://teams.live.com/meet/9358759881117?p=gMBbbjcCACs00gp0hc", "description": "mouli - teams", "created_date": "2026-06-07 22:16:25" },
+      { "id": 78, "category_id": 9, "website_link": "https://antigravity.google/download", "description": "Antigravity | google", "created_date": "2026-06-10 08:02:51" },
+      { "id": 79, "category_id": 17, "website_link": "https://www.youtube.com/@NanayamVikatanYT/videos", "description": "Nanayam vikatan", "created_date": "2026-06-12 08:22:31" },
+      { "id": 80, "category_id": 17, "website_link": "https://www.youtube.com/@InvestmentInsightsTamil/videos", "description": "Investment Insights", "created_date": "2026-06-12 09:08:24" },
+      { "id": 81, "category_id": 17, "website_link": "https://groww.in/mutual-funds/icici-prudential-dynamic-plan-direct-growth", "description": "SIP", "created_date": "2026-06-13 22:01:38" },
+      { "id": 82, "category_id": 18, "website_link": "https://www.bbc.com/sport/football/tables", "description": "football", "created_date": "2026-06-14 18:45:20" },
+      { "id": 83, "category_id": 17, "website_link": "https://www.youtube.com/@NDTVProfitIndia/videos", "description": "NDTVProfit", "created_date": "2026-06-14 18:47:45" },
+      { "id": 84, "category_id": 18, "website_link": "https://www.youtube.com/watch?v=_tG5rQlzNwI", "description": "football pechu", "created_date": "2026-06-14 18:52:19" },
+      { "id": 85, "category_id": 17, "website_link": "https://www.gripinvest.in/login", "description": "Fixed-income investment platform for corporate bonds", "created_date": "2026-06-14 19:50:29" },
+      { "id": 86, "category_id": 17, "website_link": "https://www.indiabonds.com/customer/login/", "description": "Online bond investment platform offering corporate bonds, government securities", "created_date": "2026-06-14 19:51:41" },
+      { "id": 87, "category_id": 17, "website_link": "https://docs.google.com/spreadsheets/d/1-THKwu7A8GwMrxWSCGrPaDXBhCIUwdFQGPMV6-DPSAw/edit#gid=0", "description": "Financial Planner", "created_date": "2026-06-14 20:03:52" },
+      { "id": 88, "category_id": 17, "website_link": "https://www.indmoney.com/", "description": "Investment and wealth management platform for stocks", "created_date": "2026-06-14 21:12:43" },
+      { "id": 89, "category_id": 9, "website_link": "https://dashboard.sarvam.ai/billing", "description": "Sarvam ai", "created_date": "2026-06-16 08:11:53" },
+      { "id": 90, "category_id": 17, "website_link": "https://www.youtube.com/@berich467/videos", "description": "Be rich", "created_date": "2026-06-17 08:02:19" },
+      { "id": 91, "category_id": 17, "website_link": "https://www.youtube.com/@wealthxperttamil/videos", "description": "Wealth expert", "created_date": "2026-06-17 08:04:11" },
+      { "id": 92, "category_id": 17, "website_link": "https://tamil.economictimes.com/", "description": "ET", "created_date": "2026-06-18 09:24:43" },
+      { "id": 93, "category_id": 9, "website_link": "https://ollama.com/download?", "description": "Ollama", "created_date": "2026-06-19 21:27:19" },
+      { "id": 94, "category_id": 4, "website_link": "https://www.radioindia.in/podcasts/market-pulse-daily", "description": "podcast", "created_date": "2026-06-19 21:46:46" },
+      { "id": 95, "category_id": 10, "website_link": "https://mail.google.com/mail/u/6/#inbox", "description": "Gmail - ram pandian", "created_date": "2026-06-20 18:00:07" },
+      { "id": 96, "category_id": 2, "website_link": "https://www.amazon.in/", "description": "Amazon", "created_date": "2026-06-21 10:23:01" },
+      { "id": 97, "category_id": 18, "website_link": "https://www.youtube.com/@cricketcomau/videos", "description": "Australia cricket", "created_date": "2026-06-21 21:10:31" },
+      { "id": 98, "category_id": 4, "website_link": "https://www.youtube.com/@vikatanwebtv/videos", "description": "vikatan tv", "created_date": "2026-06-23 08:12:39" },
+      { "id": 99, "category_id": 12, "website_link": "https://www.youtube.com/watch?v=C7sBloyN42I", "description": "Explore with Epaphra.", "created_date": "2026-06-24 21:37:04" },
+      { "id": 100, "category_id": 18, "website_link": "https://www.youtube.com/@fifa/videos", "description": "FIFA", "created_date": "2026-06-26 20:58:00" },
+      { "id": 101, "category_id": 12, "website_link": "https://www.primevideo.com/dp/amzn1.dv.gti.98d796fb-f7ad-4948-94c1-951b0c0fd437", "description": "Made In India: A Titan Story", "created_date": "2026-06-27 14:25:20" },
+      { "id": 102, "category_id": 15, "website_link": "https://www.youtube.com/@TheBookShowbyrjananthi/videos", "description": "The Book Show", "created_date": "2026-06-27 18:41:56" },
+      { "id": 103, "category_id": 19, "website_link": "https://drive.google.com/drive/u/6/folders/1WhlgwixcWEoGMubqq7YSBBFbwf7o_7gf", "description": "google drive", "created_date": "2026-06-27 19:02:34" },
+      { "id": 104, "category_id": 20, "website_link": "https://www.talentmaximus.info/ASPIREGROUPS/Login.aspx", "description": "Aspire - Payslip", "created_date": "2026-06-30 19:36:49" },
+      { "id": 105, "category_id": 1, "website_link": "https://opendemat.icicidirect.com/accountopening", "description": "ICICI direct - bond", "created_date": "2026-06-30 19:38:19" },
+      { "id": 106, "category_id": 4, "website_link": "https://www.instagram.com/", "description": "insta", "created_date": "2026-07-03 09:36:43" },
+      { "id": 107, "category_id": 2, "website_link": "https://pricehistory.app/", "description": "Pricehistory", "created_date": "2026-07-03 23:57:51" },
+      { "id": 108, "category_id": 18, "website_link": "https://www.youtube.com/@officialenglandcricket/videos", "description": "England & Wales Cricket", "created_date": "2026-07-04 13:20:40" },
+      { "id": 109, "category_id": 3, "website_link": "https://accounts.google.com/o/oauth2/device/usercode", "description": "Device activation", "created_date": "2026-07-04 15:36:03" },
+      { "id": 110, "category_id": 9, "website_link": "https://www.testleaf.com/course/genai-qa-engineers-training-course.html", "description": "testleaf", "created_date": "2026-07-04 16:02:14" },
+      { "id": 111, "category_id": 4, "website_link": "https://www.instagram.com/your_activity/interactions/likes/", "description": "insta -- likes", "created_date": "2026-07-07 09:50:44" },
+      { "id": 112, "category_id": 13, "website_link": "https://www.tataplay.com/my-account", "description": "Tata Play", "created_date": "2026-07-10 10:02:45" },
+      { "id": 113, "category_id": 7, "website_link": "https://tnuwwb.tn.gov.in/claims/login", "description": "Tamil Nadu Unorganised Workers Welfare Board", "created_date": "2026-07-11 15:07:06" },
+      { "id": 114, "category_id": 15, "website_link": "https://youtu.be/P91g-gXvWZA?si=m5u4RVwd_H-ghkSl", "description": "BIRD BY BIRD | ANNE LAMOTT", "created_date": "2026-07-15 08:13:20" },
+      { "id": 115, "category_id": 9, "website_link": "https://www.flash.co/search", "description": "shopping assistant", "created_date": "2026-07-18 13:01:44" },
+      { "id": 116, "category_id": 4, "website_link": "https://www.instagram.com/rampandian0520/saved/all-posts/", "description": "insta -saved", "created_date": "2026-07-19 19:12:30" },
+      { "id": 117, "category_id": 8, "website_link": "https://algomaster.io/learn/java/course-roadmap", "description": "Algomaster", "created_date": "2026-07-21 09:39:05" },
+      { "id": 118, "category_id": 13, "website_link": "https://www.accuweather.com/en/in/navalur/1883687/weather-forecast/1883687?type=locality", "description": "Weather report", "created_date": "2026-07-24 09:32:36" },
+      { "id": 119, "category_id": 7, "website_link": "https://passbook.epfindia.gov.in/MemberPassBook/login", "description": "EPFO portal - Employees' Provident Fund", "created_date": "2026-07-24 13:55:01" },
+      { "id": 120, "category_id": 18, "website_link": "https://www.youtube.com/@Wimbledon/videos", "description": "Tennis  - Wimbledon", "created_date": "2026-07-25 18:13:58" },
+      { "id": 121, "category_id": 21, "website_link": "https://www.youtube.com/@drkarthik/videos", "description": "Doctor Karthikeyan", "created_date": "2026-07-26 12:02:46" },
+      { "id": 122, "category_id": 21, "website_link": "https://www.youtube.com/watch?v=UZOO9mILaBI", "description": "Latest", "created_date": "2026-07-26 12:03:22" },
+      { "id": 123, "category_id": 8, "website_link": "https://www.linkedin.com/games/patches/", "description": "linked in games", "created_date": "2026-07-27 09:25:15" },
+      { "id": 124, "category_id": 20, "website_link": "https://partner-academy.databricks.com/pages/97/partner-academy-home-page", "description": "Databricks | data engineering", "created_date": "2026-08-02 16:14:28" },
+      { "id": 125, "category_id": 4, "website_link": "https://podcastmp3.com/", "description": "Podcast downloader | spotify", "created_date": "2026-08-28 18:55:25" },
+      { "id": 126, "category_id": 4, "website_link": "https://www.instagram.com/shristi_techacademy/", "description": "insta java1", "created_date": "2026-09-07 22:10:20" }
+    ];
+
+    // Category Badge Color Schemes
+    const categoryColors = {
+      1:  "bg-emerald-50 text-emerald-700 border-emerald-200",     // Banking
+      2:  "bg-pink-50 text-pink-700 border-pink-200",               // E-Commerce
+      3:  "bg-purple-50 text-purple-700 border-purple-200",         // Entertainment
+      4:  "bg-rose-50 text-rose-700 border-rose-200",               // Social Media
+      5:  "bg-amber-50 text-amber-700 border-amber-200",            // News & Media
+      6:  "bg-sky-50 text-sky-700 border-sky-200",                  // Travel & Booking
+      7:  "bg-blue-50 text-blue-700 border-blue-200",               // Government & Services
+      8:  "bg-indigo-50 text-indigo-700 border-indigo-200",         // Job & Career
+      9:  "bg-violet-50 text-violet-700 border-violet-200",         // AI Assistants
+      10: "bg-teal-50 text-teal-700 border-teal-200",               // Email service
+      11: "bg-orange-50 text-orange-700 border-orange-200",         // Interview
+      12: "bg-cyan-50 text-cyan-700 border-cyan-200",               // Exploring
+      13: "bg-slate-100 text-slate-700 border-slate-300",           // Others
+      14: "bg-yellow-50 text-yellow-800 border-yellow-200",         // Motivation
+      15: "bg-lime-50 text-lime-800 border-lime-200",               // Books
+      16: "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200",      // World
+      17: "bg-green-50 text-green-700 border-green-200",            // Finance
+      18: "bg-red-50 text-red-700 border-red-200",                  // Sports
+      19: "bg-stone-100 text-stone-700 border-stone-300",           // Drives
+      20: "bg-cyan-50 text-cyan-800 border-cyan-200",               // Work
+      21: "bg-emerald-50 text-emerald-800 border-emerald-300"       // Health
+    };
+
+    // State Variables
+    let currentSearch = "";
+    let currentCategory = "all";
+    let currentSort = "newest";
+    let currentPage = 1;
+    let pageSize = 25;
+    let filteredLinks = [...linksData];
+
+    // Helper: Extract simplified domain or display name
+    function getDomainLabel(url) {
+      try {
+        const parsed = new URL(url);
+        let host = parsed.hostname.replace(/^www\./, '');
+        // For youtube video or special paths, we can show clean domain
+        return host;
+      } catch (e) {
+        return url.length > 30 ? url.substring(0, 30) + '...' : url;
+      }
+    }
+
+    // Helper: Highlight query keywords safely
+    function highlightMatch(text, query) {
+      if (!query || !query.trim()) return escapeHTML(text);
+      const q = query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(${q})`, 'gi');
+      const safeText = escapeHTML(text);
+      return safeText.replace(regex, '<mark class="bg-yellow-200/80 text-slate-900 rounded px-0.5 font-medium">$1</mark>');
+    }
+
+    function escapeHTML(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // Toast Trigger
+    let toastTimeout = null;
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      toastMsg.textContent = message;
+      
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 2500);
+    }
+
+    // Copy Link Helper
+    window.copyLink = function(url, event) {
+      event.stopPropagation();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+          showToast('URL copied to clipboard!');
+        }).catch(() => {
+          fallbackCopy(url);
+        });
+      } else {
+        fallbackCopy(url);
+      }
+    };
+
+    function fallbackCopy(text) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showToast('URL copied to clipboard!');
+      } catch (err) {
+        showToast('Failed to copy');
+      }
+      document.body.removeChild(textArea);
+    }
+
+    // Initialize UI Elements
+    function initUI() {
+      // 1. Populate Category Dropdown & Pills
+      const categorySelect = document.getElementById('category-select');
+      const categoryPillsContainer = document.getElementById('category-pills');
+
+      // Sort categories alphabetically for dropdown/pills convenience or keep mapped order
+      const sortedCategories = [...categories].sort((a, b) => a.name.localeCompare(b.name));
+
+      // Quick pill "All"
+      const allPill = document.createElement('button');
+      allPill.className = "category-pill px-3 py-1 text-xs font-semibold rounded-full transition-all border shrink-0 bg-indigo-600 text-white border-indigo-600 shadow-xs";
+      allPill.textContent = `All (${linksData.length})`;
+      allPill.dataset.catId = "all";
+      allPill.onclick = () => selectCategory("all");
+      categoryPillsContainer.appendChild(allPill);
+
+      sortedCategories.forEach(cat => {
+        // Count items
+        const count = linksData.filter(l => l.category_id === cat.id).length;
+        if (count === 0) return; // Skip empty categories if any
+
+        // Option
+        const opt = document.createElement('option');
+        opt.value = cat.id;
+        opt.textContent = `${cat.name} (${count})`;
+        categorySelect.appendChild(opt);
+
+        // Quick Pill
+        const pill = document.createElement('button');
+        pill.className = "category-pill px-3 py-1 text-xs font-medium rounded-full transition-all border shrink-0 bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50";
+        pill.textContent = `${cat.name} (${count})`;
+        pill.dataset.catId = cat.id;
+        pill.onclick = () => selectCategory(String(cat.id));
+        categoryPillsContainer.appendChild(pill);
+      });
+
+      // 2. Attach Event Listeners
+      const searchInput = document.getElementById('search-input');
+      const clearSearchBtn = document.getElementById('clear-search-btn');
+
+      searchInput.addEventListener('input', (e) => {
+        currentSearch = e.target.value.trim();
+        currentPage = 1;
+        clearSearchBtn.classList.toggle('hidden', currentSearch === "");
+        updateFiltersAndRender();
+      });
+
+      clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = "";
+        currentSearch = "";
+        clearSearchBtn.classList.add('hidden');
+        currentPage = 1;
+        updateFiltersAndRender();
+        searchInput.focus();
+      });
+
+      categorySelect.addEventListener('change', (e) => {
+        selectCategory(e.target.value);
+      });
+
+      const sortSelect = document.getElementById('sort-select');
+      sortSelect.addEventListener('change', (e) => {
+        currentSort = e.target.value;
+        currentPage = 1;
+        updateFiltersAndRender();
+      });
+
+      const pageSizeSelect = document.getElementById('page-size-select');
+      pageSizeSelect.addEventListener('change', (e) => {
+        pageSize = e.target.value === 'all' ? Infinity : parseInt(e.target.value, 10);
+        currentPage = 1;
+        renderTable();
+      });
+
+      const resetBtn = document.getElementById('reset-btn');
+      resetBtn.addEventListener('click', resetAllFilters);
+
+      const emptyClearBtn = document.getElementById('empty-clear-btn');
+      emptyClearBtn.addEventListener('click', resetAllFilters);
+
+      // Render Initial Table
+      updateFiltersAndRender();
+    }
+
+    function selectCategory(catId) {
+      currentCategory = catId;
+      document.getElementById('category-select').value = catId;
+      currentPage = 1;
+
+      // Update pill styling
+      const pills = document.querySelectorAll('.category-pill');
+      pills.forEach(pill => {
+        if (pill.dataset.catId === String(catId)) {
+          pill.className = "category-pill px-3 py-1 text-xs font-semibold rounded-full transition-all border shrink-0 bg-indigo-600 text-white border-indigo-600 shadow-xs";
+        } else {
+          pill.className = "category-pill px-3 py-1 text-xs font-medium rounded-full transition-all border shrink-0 bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50";
+        }
+      });
+
+      updateFiltersAndRender();
+    }
+
+    function resetAllFilters() {
+      currentSearch = "";
+      currentCategory = "all";
+      currentSort = "newest";
+      currentPage = 1;
+      
+      document.getElementById('search-input').value = "";
+      document.getElementById('clear-search-btn').classList.add('hidden');
+      document.getElementById('category-select').value = "all";
+      document.getElementById('sort-select').value = "newest";
+
+      const pills = document.querySelectorAll('.category-pill');
+      pills.forEach(pill => {
+        if (pill.dataset.catId === "all") {
+          pill.className = "category-pill px-3 py-1 text-xs font-semibold rounded-full transition-all border shrink-0 bg-indigo-600 text-white border-indigo-600 shadow-xs";
+        } else {
+          pill.className = "category-pill px-3 py-1 text-xs font-medium rounded-full transition-all border shrink-0 bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50";
+        }
+      });
+
+      updateFiltersAndRender();
+    }
+
+    // Filter, Sort and Render Pipeline
+    function updateFiltersAndRender() {
+      const isFiltered = currentSearch !== "" || currentCategory !== "all" || currentSort !== "newest";
+      document.getElementById('reset-btn').classList.toggle('hidden', !isFiltered);
+
+      const q = currentSearch.toLowerCase();
+
+      // 1. Filter
+      filteredLinks = linksData.filter(item => {
+        const catName = (categoryMap[item.category_id] || "").toLowerCase();
+        const desc = (item.description || "").toLowerCase();
+        const link = (item.website_link || "").toLowerCase();
+
+        // Category Filter
+        if (currentCategory !== "all" && item.category_id !== parseInt(currentCategory, 10)) {
+          return false;
+        }
+
+        // Search text Filter
+        if (q) {
+          const matchSearch = desc.includes(q) || link.includes(q) || catName.includes(q);
+          if (!matchSearch) return false;
+        }
+
+        return true;
+      });
+
+      // 2. Sort
+      filteredLinks.sort((a, b) => {
+        if (currentSort === "newest") {
+          return new Date(b.created_date) - new Date(a.created_date);
+        } else if (currentSort === "oldest") {
+          return new Date(a.created_date) - new Date(b.created_date);
+        } else if (currentSort === "az") {
+          const nameA = a.description || a.website_link;
+          const nameB = b.description || b.website_link;
+          return nameA.localeCompare(nameB, undefined, { sensitivity: 'base' });
+        } else if (currentSort === "za") {
+          const nameA = a.description || a.website_link;
+          const nameB = b.description || b.website_link;
+          return nameB.localeCompare(nameA, undefined, { sensitivity: 'base' });
+        }
+        return 0;
+      });
+
+      // Update Counts
+      document.getElementById('visible-count').textContent = filteredLinks.length;
+
+      // 3. Render Table
+      renderTable();
+    }
+
+    function renderTable() {
+      const tableBody = document.getElementById('table-body');
+      const emptyState = document.getElementById('empty-state');
+      const paginationInfo = document.getElementById('pagination-info');
+      const paginationControls = document.getElementById('pagination-controls');
+
+      if (filteredLinks.length === 0) {
+        tableBody.innerHTML = "";
+        emptyState.classList.remove('hidden');
+        paginationInfo.textContent = "0 of 0 links";
+        paginationControls.innerHTML = "";
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      // Pagination slice
+      const total = filteredLinks.length;
+      const totalPages = pageSize === Infinity ? 1 : Math.ceil(total / pageSize);
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const startIndex = pageSize === Infinity ? 0 : (currentPage - 1) * pageSize;
+      const endIndex = pageSize === Infinity ? total : Math.min(startIndex + pageSize, total);
+      const pageItems = filteredLinks.slice(startIndex, endIndex);
+
+      paginationInfo.textContent = `${startIndex + 1} to ${endIndex} of ${total}`;
+
+      // Build Table HTML
+      let html = "";
+      pageItems.forEach((item, index) => {
+        const catName = categoryMap[item.category_id] || "Other";
+        const catBadgeStyle = categoryColors[item.category_id] || "bg-slate-100 text-slate-700 border-slate-200";
+        const domainLabel = getDomainLabel(item.website_link);
+
+        const highlightedDomain = highlightMatch(domainLabel, currentSearch);
+        const highlightedDesc = highlightMatch(item.description, currentSearch);
+        const highlightedCat = highlightMatch(catName, currentSearch);
+
+        html += `
+          <tr class="hover:bg-slate-50/90 transition-colors group">
+            <!-- Website Column -->
+            <td class="py-3.5 pl-5 pr-4 align-middle">
+              <a 
+                href="${escapeHTML(item.website_link)}" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="inline-flex items-center gap-2 font-semibold text-indigo-600 hover:text-indigo-800 hover:underline group-hover:text-indigo-700 max-w-full"
+                title="${escapeHTML(item.website_link)}"
+              >
+                <!-- Globe / Link icon -->
+                <span class="p-1 rounded-md bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100 shrink-0 transition-colors">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                  </svg>
+                </span>
+                <span class="truncate text-sm font-medium tracking-tight text-slate-800 hover:text-indigo-600 transition-colors">
+                  ${highlightedDomain}
+                </span>
+              </a>
+            </td>
+
+            <!-- Description Column -->
+            <td class="py-3.5 px-4 align-middle">
+              <div class="text-sm font-normal text-slate-700 leading-snug line-clamp-2">
+                ${highlightedDesc}
+              </div>
+            </td>
+
+            <!-- Category Column -->
+            <td class="py-3.5 px-4 align-middle">
+              <span 
+                onclick="selectCategory('${item.category_id}')" 
+                class="cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${catBadgeStyle} transition-all hover:scale-105 active:scale-95 shadow-2xs"
+                title="Filter by ${escapeHTML(catName)}"
+              >
+                <span class="w-1.5 h-1.5 rounded-full bg-current opacity-70"></span>
+                <span>${highlightedCat}</span>
+              </span>
+            </td>
+
+            <!-- Action Column (Copy / External Link) -->
+            <td class="py-3.5 pl-3 pr-5 align-middle text-right">
+              <div class="inline-flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                <button 
+                  onclick="copyLink('${escapeHTML(item.website_link)}', event)"
+                  class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                  title="Copy link to clipboard"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                  </svg>
+                </button>
+                <a 
+                  href="${escapeHTML(item.website_link)}" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                  title="Open website in new tab"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                  </svg>
+                </a>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      tableBody.innerHTML = html;
+
+      // Render Pagination Buttons
+      renderPaginationButtons(totalPages);
+    }
+
+    function renderPaginationButtons(totalPages) {
+      const container = document.getElementById('pagination-controls');
+      if (totalPages <= 1) {
+        container.innerHTML = "";
+        return;
+      }
+
+      let btnHtml = `
+        <button 
+          onclick="changePage(${currentPage - 1})" 
+          ${currentPage === 1 ? 'disabled' : ''}
+          class="px-2.5 py-1 rounded-md text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          Prev
+        </button>
+      `;
+
+      // Page numbers
+      const maxButtons = 5;
+      let startPage = Math.max(1, currentPage - 2);
+      let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+      if (endPage - startPage < maxButtons - 1) {
+        startPage = Math.max(1, endPage - maxButtons + 1);
+      }
+
+      for (let p = startPage; p <= endPage; p++) {
+        const isActive = p === currentPage;
+        btnHtml += `
+          <button 
+            onclick="changePage(${p})" 
+            class="w-7 h-7 flex items-center justify-center rounded-md text-xs font-semibold transition-colors ${
+              isActive 
+                ? 'bg-indigo-600 text-white shadow-xs' 
+                : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+            }"
+          >
+            ${p}
+          </button>
+        `;
+      }
+
+      btnHtml += `
+        <button 
+          onclick="changePage(${currentPage + 1})" 
+          ${currentPage === totalPages ? 'disabled' : ''}
+          class="px-2.5 py-1 rounded-md text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          Next
+        </button>
+      `;
+
+      container.innerHTML = btnHtml;
+    }
+
+    window.changePage = function(newPage) {
+      currentPage = newPage;
+      renderTable();
+      // Smooth scroll to top of table
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Initialize application when DOM is ready
+    document.addEventListener('DOMContentLoaded', initUI);
+  </script>
+</body>
+</html>
